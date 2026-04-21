@@ -11,4 +11,5 @@ export const validationSchema = Joi.object({
   DB_USER: Joi.string().default('secret_store_user'),
   DB_PASSWORD: Joi.string().default('secret_store_password'),
   SWAGGER_ENABLED: Joi.string().valid('true', 'false').default('true'),
+  ENCRYPTION_KEY: Joi.string().min(32).max(32).required(),
 });

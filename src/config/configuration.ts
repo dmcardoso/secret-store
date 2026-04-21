@@ -10,6 +10,9 @@ export default () => ({
     user: process.env.DB_USER ?? 'secret_store_user',
     password: process.env.DB_PASSWORD ?? 'secret_store_password',
   },
+  encryption: {
+    key: process.env.ENCRYPTION_KEY ?? '',
+  },
   swagger: {
     enabled: process.env.SWAGGER_ENABLED === 'true',
   },
