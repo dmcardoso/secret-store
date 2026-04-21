@@ -11,7 +11,7 @@ import { TransformInterceptor } from './shared/interceptors/transform.intercepto
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
-  const logger = app.get(LoggerService);
+  const logger = await app.resolve(LoggerService);
   app.useLogger(logger);
 
   const configService = app.get(ConfigService);
