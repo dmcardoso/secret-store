@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Migrator } from '@mikro-orm/migrations';
 import type { MikroOrmModuleOptions } from '@mikro-orm/nestjs';
 import type { IDatabaseDriver } from '@mikro-orm/core';
 
@@ -21,6 +22,15 @@ import type { IDatabaseDriver } from '@mikro-orm/core';
         password: configService.get<string>('database.password'),
         autoLoadEntities: true,
         debug: configService.get<string>('node.env') === 'development',
+        extensions: [Migrator],
+        migrations: {
+          path: 'dist/migrations',
+          pathTs: 'src/migrations',
+          transactional: true,
+          allOrNothing: true,
+          snapshot: true,
+          emit: 'ts',
+        },
       }),
     }),
   ],
