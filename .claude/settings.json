@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git commit *)",
+      "Bash(curl *)",
+      "Bash(pnpm *)",
+      "Bash(npm *)",
+      "Bash(docker *)",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__plugin_context7_context7__query-docs",
+      "Read",
+      "WebSearch"
+    ]
+  }
+}

@@ -1,0 +1,5 @@
+[tools]
+node = "24"
+
+[env]
+ENCRYPTION_KEY = "change-me-to-a-32-char-string-as"
