@@ -1,0 +1,25 @@
+services:
+  postgres:
+    image: postgres:18
+    ports:
+      - '${DB_PORT:-5432}:5432'
+    environment:
+      POSTGRES_USER: ${DB_USER:-secret_store_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret_store_password}
+      POSTGRES_DB: ${DB_NAME:-secret_store}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-secret_store_user} -d ${DB_NAME:-secret_store}']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - secret-store-network
+
+volumes:
+  pgdata:
+
+networks:
+  secret-store-network:
+    driver: bridge

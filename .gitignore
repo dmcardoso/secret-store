@@ -46,6 +46,9 @@ lerna-debug.log*
 .temp
 .tmp
 
+# Docker override
+docker-compose.override.yaml
+
 # Runtime data
 pids
 *.pid
