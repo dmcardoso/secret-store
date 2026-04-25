@@ -1,8 +1,9 @@
 import { Test } from '@nestjs/testing';
+import { getRepositoryToken } from '@mikro-orm/nestjs';
 import { ListSecretsService } from './list-secrets.service';
 import { EncryptionService } from '../../shared/encryption/encryption.service';
 import { LoggerService } from '../../shared/logger/logger.service';
-import { SecretRepository } from '../repositories/secret.repository';
+import { SecretSchema } from '../entities/secret.entity';
 
 describe('ListSecretsService', () => {
   let service: ListSecretsService;
@@ -31,7 +32,7 @@ describe('ListSecretsService', () => {
     const module = await Test.createTestingModule({
       providers: [
         ListSecretsService,
-        { provide: SecretRepository, useValue: mockRepo },
+        { provide: getRepositoryToken(SecretSchema), useValue: mockRepo },
         { provide: EncryptionService, useValue: mockEncryption },
         {
           provide: LoggerService,
