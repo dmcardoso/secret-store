@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { SecretSchema } from './entities/secret.entity';
-import { SecretRepository } from './repositories/secret.repository';
 import { CreateSecretService } from './services/create-secret.service';
 import { ListSecretsService } from './services/list-secrets.service';
 import { GetSecretService } from './services/get-secret.service';
@@ -38,7 +37,6 @@ import { GeneratePasswordController } from './controllers/generate-password.cont
     { provide: UPDATE_SECRET_SERVICE, useClass: UpdateSecretService },
     { provide: DELETE_SECRET_SERVICE, useClass: DeleteSecretService },
     { provide: GENERATE_PASSWORD_SERVICE, useClass: GeneratePasswordService },
-    SecretRepository,
   ],
   exports: [GENERATE_PASSWORD_SERVICE],
 })
