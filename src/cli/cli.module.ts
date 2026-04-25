@@ -1,17 +1,9 @@
 import { Module } from '@nestjs/common';
 import { CliConfigModule } from './config/cli-config.module';
-import { DatabaseModule } from '../database/database.module';
 import { SharedModule } from '../shared/shared.module';
-import { GeneratePasswordModule } from '../secrets/generate-password/generate-password.module';
-import { GeneratePasswordCommand } from './commands/generate-password/generate-password.command';
+import { GeneratePasswordCommandModule } from './commands/generate-password/generate-password.command.module';
 
 @Module({
-  imports: [
-    CliConfigModule,
-    DatabaseModule,
-    SharedModule,
-    GeneratePasswordModule,
-  ],
-  providers: [GeneratePasswordCommand],
+  imports: [CliConfigModule, SharedModule, GeneratePasswordCommandModule],
 })
 export class CliModule {}
