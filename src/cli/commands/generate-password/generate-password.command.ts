@@ -16,6 +16,7 @@ export class GeneratePasswordCommand extends CommandRunner {
     private readonly logService: LoggerService,
   ) {
     super();
+    this.logService.setContext(GeneratePasswordCommand.name);
   }
 
   async run(
