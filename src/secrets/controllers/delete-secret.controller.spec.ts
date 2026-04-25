@@ -1,17 +1,20 @@
 import { Test } from '@nestjs/testing';
 import { DeleteSecretController } from './delete-secret.controller';
-import { DeleteSecretService } from '../services/delete-secret.service';
+import { DELETE_SECRET_SERVICE } from '../domain/delete-secret.service.interface';
+import type { IDeleteSecretService } from '../domain/delete-secret.service.interface';
 
 describe('DeleteSecretController', () => {
   let controller: DeleteSecretController;
-  let mockService: { execute: jest.Mock };
+  let mockService: jest.Mocked<IDeleteSecretService>;
 
   beforeEach(async () => {
-    mockService = { execute: jest.fn().mockResolvedValue(undefined) };
+    mockService = {
+      execute: jest.fn().mockResolvedValue(undefined),
+    };
 
     const module = await Test.createTestingModule({
       controllers: [DeleteSecretController],
-      providers: [{ provide: DeleteSecretService, useValue: mockService }],
+      providers: [{ provide: DELETE_SECRET_SERVICE, useValue: mockService }],
     }).compile();
 
     controller = module.get(DeleteSecretController);
@@ -19,6 +22,6 @@ describe('DeleteSecretController', () => {
 
   it('should delegate to service with id', async () => {
     await controller.delete('1');
-    expect(mockService.execute).toHaveBeenCalledWith('1');
+    expect(jest.spyOn(mockService, 'execute')).toHaveBeenCalledWith('1');
   });
 });

@@ -3,9 +3,10 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/core';
 import { LoggerService } from '../../shared/logger/logger.service';
 import { SecretSchema, type Secret } from '../entities/secret.entity';
+import { IDeleteSecretService } from '../domain/delete-secret.service.interface';
 
 @Injectable()
-export class DeleteSecretService {
+export class DeleteSecretService implements IDeleteSecretService {
   constructor(
     @InjectRepository(SecretSchema)
     private readonly repo: EntityRepository<Secret>,

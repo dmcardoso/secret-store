@@ -4,9 +4,10 @@ import { LoggerService } from '../../shared/logger/logger.service';
 import { SecretRepository } from '../repositories/secret.repository';
 import { SecretResponseDto } from '../dto/secret-response.dto';
 import { PaginationDto } from '../../shared/dto/pagination.dto';
+import { IListSecretsService } from '../domain/list-secrets.service.interface';
 
 @Injectable()
-export class ListSecretsService {
+export class ListSecretsService implements IListSecretsService {
   constructor(
     private readonly secretRepo: SecretRepository,
     private readonly encryptionService: EncryptionService,

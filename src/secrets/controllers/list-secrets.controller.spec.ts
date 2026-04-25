@@ -1,10 +1,12 @@
 import { Test } from '@nestjs/testing';
 import { ListSecretsController } from './list-secrets.controller';
-import { ListSecretsService } from '../services/list-secrets.service';
+import { LIST_SECRETS_SERVICE } from '../domain/list-secrets.service.interface';
+import type { IListSecretsService } from '../domain/list-secrets.service.interface';
+import type { PaginationDto } from '../../shared/dto/pagination.dto';
 
 describe('ListSecretsController', () => {
   let controller: ListSecretsController;
-  let mockService: { execute: jest.Mock };
+  let mockService: jest.Mocked<IListSecretsService>;
 
   beforeEach(async () => {
     mockService = {
@@ -15,15 +17,16 @@ describe('ListSecretsController', () => {
 
     const module = await Test.createTestingModule({
       controllers: [ListSecretsController],
-      providers: [{ provide: ListSecretsService, useValue: mockService }],
+      providers: [{ provide: LIST_SECRETS_SERVICE, useValue: mockService }],
     }).compile();
 
     controller = module.get(ListSecretsController);
   });
 
   it('should delegate to service with pagination', async () => {
-    const result = await controller.list({ page: 1, limit: 10 });
-    expect(mockService.execute).toHaveBeenCalledWith({ page: 1, limit: 10 });
+    const pagination: PaginationDto = { page: 1, limit: 10 };
+    const result = await controller.list(pagination);
+    expect(jest.spyOn(mockService, 'execute')).toHaveBeenCalledWith(pagination);
     expect(result.total).toBe(0);
   });
 });

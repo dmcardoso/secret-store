@@ -1,13 +1,17 @@
-import { Controller, Put, Param, Body } from '@nestjs/common';
+import { Controller, Put, Param, Body, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { UpdateSecretService } from '../services/update-secret.service';
+import { UPDATE_SECRET_SERVICE } from '../domain/update-secret.service.interface';
+import type { IUpdateSecretService } from '../domain/update-secret.service.interface';
 import { UpdateSecretDto } from '../dto/update-secret.dto';
 import { SecretResponseDto } from '../dto/secret-response.dto';
 
 @ApiTags('Secrets')
 @Controller('secrets')
 export class UpdateSecretController {
-  constructor(private readonly updateSecretService: UpdateSecretService) {}
+  constructor(
+    @Inject(UPDATE_SECRET_SERVICE)
+    private readonly updateSecretService: IUpdateSecretService,
+  ) {}
 
   @Put(':id')
   @ApiOperation({ summary: 'Update a secret' })

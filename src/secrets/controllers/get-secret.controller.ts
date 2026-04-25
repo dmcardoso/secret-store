@@ -1,12 +1,16 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { GetSecretService } from '../services/get-secret.service';
+import { GET_SECRET_SERVICE } from '../domain/get-secret.service.interface';
+import type { IGetSecretService } from '../domain/get-secret.service.interface';
 import { SecretResponseDto } from '../dto/secret-response.dto';
 
 @ApiTags('Secrets')
 @Controller('secrets')
 export class GetSecretController {
-  constructor(private readonly getSecretService: GetSecretService) {}
+  constructor(
+    @Inject(GET_SECRET_SERVICE)
+    private readonly getSecretService: IGetSecretService,
+  ) {}
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a secret by id' })

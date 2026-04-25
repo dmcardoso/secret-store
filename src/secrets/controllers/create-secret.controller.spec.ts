@@ -1,10 +1,12 @@
 import { Test } from '@nestjs/testing';
 import { CreateSecretController } from './create-secret.controller';
-import { CreateSecretService } from '../services/create-secret.service';
+import { CREATE_SECRET_SERVICE } from '../domain/create-secret.service.interface';
+import type { ICreateSecretService } from '../domain/create-secret.service.interface';
+import type { CreateSecretDto } from '../dto/create-secret.dto';
 
 describe('CreateSecretController', () => {
   let controller: CreateSecretController;
-  let mockService: { execute: jest.Mock };
+  let mockService: jest.Mocked<ICreateSecretService>;
 
   beforeEach(async () => {
     mockService = {
@@ -13,16 +15,21 @@ describe('CreateSecretController', () => {
 
     const module = await Test.createTestingModule({
       controllers: [CreateSecretController],
-      providers: [{ provide: CreateSecretService, useValue: mockService }],
+      providers: [{ provide: CREATE_SECRET_SERVICE, useValue: mockService }],
     }).compile();
 
     controller = module.get(CreateSecretController);
   });
 
   it('should delegate to service', async () => {
-    const dto = { username: 'u', website: 'w', secretName: 's', password: 'p' };
+    const dto: CreateSecretDto = {
+      username: 'u',
+      website: 'w',
+      secretName: 's',
+      password: 'p',
+    };
     const result = await controller.create(dto);
-    expect(mockService.execute).toHaveBeenCalledWith(dto);
+    expect(jest.spyOn(mockService, 'execute')).toHaveBeenCalledWith(dto);
     expect(result.id).toBe('1');
   });
 });

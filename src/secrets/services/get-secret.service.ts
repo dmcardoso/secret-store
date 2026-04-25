@@ -5,9 +5,10 @@ import { EncryptionService } from '../../shared/encryption/encryption.service';
 import { LoggerService } from '../../shared/logger/logger.service';
 import { SecretSchema, type Secret } from '../entities/secret.entity';
 import { SecretResponseDto } from '../dto/secret-response.dto';
+import { IGetSecretService } from '../domain/get-secret.service.interface';
 
 @Injectable()
-export class GetSecretService {
+export class GetSecretService implements IGetSecretService {
   constructor(
     @InjectRepository(SecretSchema)
     private readonly repo: EntityRepository<Secret>,
