@@ -1,16 +1,17 @@
-import { Command, CommandRunner, Option } from 'nest-commander';
+import { Command } from 'nest-commander';
 import { Inject } from '@nestjs/common';
 import { DELETE_SECRET_SERVICE } from '../../../secrets/domain/delete-secret.service.interface';
 import type { IDeleteSecretService } from '../../../secrets/domain/delete-secret.service.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 import type { DeleteSecretOptions } from './delete-secret-options.dto';
 import { outputSuccess } from '../../utils/output.util';
+import { BaseCommand } from '../base.command';
 
 @Command({
   name: 'delete-secret',
   description: 'Delete a secret',
 })
-export class DeleteSecretCommand extends CommandRunner {
+export class DeleteSecretCommand extends BaseCommand {
   constructor(
     @Inject(DELETE_SECRET_SERVICE)
     private readonly deleteSecretService: IDeleteSecretService,
@@ -33,13 +34,5 @@ export class DeleteSecretCommand extends CommandRunner {
     outputSuccess('Secret deleted successfully', options?.json ?? false, {
       id,
     });
-  }
-
-  @Option({
-    flags: '-j, --json',
-    description: 'Output as JSON',
-  })
-  parseJson(): boolean {
-    return true;
   }
 }

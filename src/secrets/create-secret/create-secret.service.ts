@@ -7,6 +7,7 @@ import { SecretSchema, type Secret } from '../entities/secret.entity';
 import { CreateSecretDto } from '../dto/create-secret.dto';
 import { SecretResponseDto } from '../dto/secret-response.dto';
 import { ICreateSecretService } from '../domain/create-secret.service.interface';
+import { SecretMapper } from '../mappers/secret.mapper';
 
 @Injectable()
 export class CreateSecretService implements ICreateSecretService {
@@ -29,14 +30,6 @@ export class CreateSecretService implements ICreateSecretService {
     });
     await this.repo.getEntityManager().persist(secret).flush();
     this.logger.log(`Secret created with id ${secret.id}`);
-    return {
-      id: secret.id,
-      username: secret.username,
-      website: secret.website,
-      secretName: secret.secretName,
-      password: dto.password,
-      createdAt: secret.createdAt,
-      updatedAt: secret.updatedAt,
-    };
+    return SecretMapper.toResponseDto(secret, dto.password);
   }
 }

@@ -7,6 +7,7 @@ import { SecretSchema, type Secret } from '../entities/secret.entity';
 import { UpdateSecretDto } from '../dto/update-secret.dto';
 import { SecretResponseDto } from '../dto/secret-response.dto';
 import { IUpdateSecretService } from '../domain/update-secret.service.interface';
+import { SecretMapper } from '../mappers/secret.mapper';
 
 @Injectable()
 export class UpdateSecretService implements IUpdateSecretService {
@@ -34,16 +35,8 @@ export class UpdateSecretService implements IUpdateSecretService {
 
     await this.repo.getEntityManager().flush();
     this.logger.log(`Updated secret ${id}`);
-    return {
-      id: secret.id,
-      username: secret.username,
-      website: secret.website,
-      secretName: secret.secretName,
-      password: dto.password
-        ? dto.password
-        : this.encryptionService.decrypt(secret.encryptedPassword),
-      createdAt: secret.createdAt,
-      updatedAt: secret.updatedAt,
-    };
+    const decryptedPassword =
+      dto.password ?? this.encryptionService.decrypt(secret.encryptedPassword);
+    return SecretMapper.toResponseDto(secret, decryptedPassword);
   }
 }

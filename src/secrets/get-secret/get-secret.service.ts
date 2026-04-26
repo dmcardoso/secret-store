@@ -6,6 +6,7 @@ import { LoggerService } from '../../shared/logger/logger.service';
 import { SecretSchema, type Secret } from '../entities/secret.entity';
 import { SecretResponseDto } from '../dto/secret-response.dto';
 import { IGetSecretService } from '../domain/get-secret.service.interface';
+import { SecretMapper } from '../mappers/secret.mapper';
 
 @Injectable()
 export class GetSecretService implements IGetSecretService {
@@ -24,14 +25,9 @@ export class GetSecretService implements IGetSecretService {
       throw new NotFoundException(`Secret with id ${id} not found`);
     }
     this.logger.log(`Retrieved secret ${id}`);
-    return {
-      id: secret.id,
-      username: secret.username,
-      website: secret.website,
-      secretName: secret.secretName,
-      password: this.encryptionService.decrypt(secret.encryptedPassword),
-      createdAt: secret.createdAt,
-      updatedAt: secret.updatedAt,
-    };
+    return SecretMapper.toResponseDto(
+      secret,
+      this.encryptionService.decrypt(secret.encryptedPassword),
+    );
   }
 }

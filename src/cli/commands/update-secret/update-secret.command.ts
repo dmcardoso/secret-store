@@ -1,16 +1,17 @@
-import { Command, CommandRunner, Option } from 'nest-commander';
+import { Command, Option } from 'nest-commander';
 import { Inject } from '@nestjs/common';
 import { UPDATE_SECRET_SERVICE } from '../../../secrets/domain/update-secret.service.interface';
 import type { IUpdateSecretService } from '../../../secrets/domain/update-secret.service.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 import type { UpdateSecretOptions } from './update-secret-options.dto';
 import { outputSecret } from '../../utils/output.util';
+import { BaseCommand } from '../base.command';
 
 @Command({
   name: 'update-secret',
   description: 'Update a secret',
 })
-export class UpdateSecretCommand extends CommandRunner {
+export class UpdateSecretCommand extends BaseCommand {
   constructor(
     @Inject(UPDATE_SECRET_SERVICE)
     private readonly updateSecretService: IUpdateSecretService,
@@ -80,13 +81,5 @@ export class UpdateSecretCommand extends CommandRunner {
   })
   parsePassword(value: string): string {
     return value;
-  }
-
-  @Option({
-    flags: '-j, --json',
-    description: 'Output as JSON',
-  })
-  parseJson(): boolean {
-    return true;
   }
 }

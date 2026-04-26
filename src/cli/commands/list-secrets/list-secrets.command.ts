@@ -1,17 +1,17 @@
-import { Command, CommandRunner, Option } from 'nest-commander';
+import { Command, Option } from 'nest-commander';
 import { Inject } from '@nestjs/common';
 import { LIST_SECRETS_SERVICE } from '../../../secrets/domain/list-secrets.service.interface';
 import type { IListSecretsService } from '../../../secrets/domain/list-secrets.service.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 import type { ListSecretsOptions } from './list-secrets-options.dto';
 import { outputSecretList } from '../../utils/output.util';
-import type { SecretResponseDto } from '../../../secrets/dto/secret-response.dto';
+import { BaseCommand } from '../base.command';
 
 @Command({
   name: 'list-secrets',
   description: 'List all secrets',
 })
-export class ListSecretsCommand extends CommandRunner {
+export class ListSecretsCommand extends BaseCommand {
   constructor(
     @Inject(LIST_SECRETS_SERVICE)
     private readonly listSecretsService: IListSecretsService,
@@ -30,10 +30,7 @@ export class ListSecretsCommand extends CommandRunner {
       limit: options?.limit ?? 10,
     });
 
-    outputSecretList(
-      { ...result, data: result.data as SecretResponseDto[] },
-      options?.json ?? false,
-    );
+    outputSecretList(result, options?.json ?? false);
   }
 
   @Option({
@@ -63,13 +60,5 @@ export class ListSecretsCommand extends CommandRunner {
       throw new Error('Limit must not exceed 100');
     }
     return parsed;
-  }
-
-  @Option({
-    flags: '-j, --json',
-    description: 'Output as JSON',
-  })
-  parseJson(): boolean {
-    return true;
   }
 }

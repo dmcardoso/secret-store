@@ -1,16 +1,17 @@
-import { Command, CommandRunner, Option } from 'nest-commander';
+import { Command } from 'nest-commander';
 import { Inject } from '@nestjs/common';
 import { GET_SECRET_SERVICE } from '../../../secrets/domain/get-secret.service.interface';
 import type { IGetSecretService } from '../../../secrets/domain/get-secret.service.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 import type { GetSecretOptions } from './get-secret-options.dto';
 import { outputSecret } from '../../utils/output.util';
+import { BaseCommand } from '../base.command';
 
 @Command({
   name: 'get-secret',
   description: 'Get a secret by ID',
 })
-export class GetSecretCommand extends CommandRunner {
+export class GetSecretCommand extends BaseCommand {
   constructor(
     @Inject(GET_SECRET_SERVICE)
     private readonly getSecretService: IGetSecretService,
@@ -28,13 +29,5 @@ export class GetSecretCommand extends CommandRunner {
 
     const result = await this.getSecretService.execute(id);
     outputSecret(result, options?.json ?? false);
-  }
-
-  @Option({
-    flags: '-j, --json',
-    description: 'Output as JSON',
-  })
-  parseJson(): boolean {
-    return true;
   }
 }

@@ -1,16 +1,17 @@
-import { Command, CommandRunner, Option } from 'nest-commander';
+import { Command, Option } from 'nest-commander';
 import { Inject } from '@nestjs/common';
 import { CREATE_SECRET_SERVICE } from '../../../secrets/domain/create-secret.service.interface';
 import type { ICreateSecretService } from '../../../secrets/domain/create-secret.service.interface';
 import { LoggerService } from '../../../shared/logger/logger.service';
 import type { CreateSecretOptions } from './create-secret-options.dto';
 import { outputSecret } from '../../utils/output.util';
+import { BaseCommand } from '../base.command';
 
 @Command({
   name: 'create-secret',
   description: 'Create a new secret',
 })
-export class CreateSecretCommand extends CommandRunner {
+export class CreateSecretCommand extends BaseCommand {
   constructor(
     @Inject(CREATE_SECRET_SERVICE)
     private readonly createSecretService: ICreateSecretService,
@@ -75,13 +76,5 @@ export class CreateSecretCommand extends CommandRunner {
   })
   parsePassword(value: string): string {
     return value;
-  }
-
-  @Option({
-    flags: '-j, --json',
-    description: 'Output as JSON',
-  })
-  parseJson(): boolean {
-    return true;
   }
 }
