@@ -12,5 +12,6 @@ import { CreateSecretController } from './create-secret.controller';
   providers: [
     { provide: CREATE_SECRET_SERVICE, useClass: CreateSecretService },
   ],
+  exports: [CREATE_SECRET_SERVICE],
 })
 export class CreateSecretModule {}

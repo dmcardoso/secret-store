@@ -9,6 +9,7 @@ import type { IDatabaseDriver } from '@mikro-orm/core';
 @Module({
   imports: [
     MikroOrmModule.forRootAsync({
+      driver: PostgreSqlDriver,
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CliConfigModule } from './config/cli-config.module';
+import { DatabaseModule } from '../database/database.module';
 import { SharedModule } from '../shared/shared.module';
 import { GeneratePasswordCommandModule } from './commands/generate-password/generate-password.command.module';
 import { CreateSecretCommandModule } from './commands/create-secret/create-secret.command.module';
@@ -11,6 +12,7 @@ import { DeleteSecretCommandModule } from './commands/delete-secret/delete-secre
 @Module({
   imports: [
     CliConfigModule,
+    DatabaseModule,
     SharedModule,
     GeneratePasswordCommandModule,
     CreateSecretCommandModule,

@@ -10,5 +10,6 @@ import { ListSecretsController } from './list-secrets.controller';
   imports: [MikroOrmModule.forFeature([SecretSchema]), EncryptionModule],
   controllers: [ListSecretsController],
   providers: [{ provide: LIST_SECRETS_SERVICE, useClass: ListSecretsService }],
+  exports: [LIST_SECRETS_SERVICE],
 })
 export class ListSecretsModule {}

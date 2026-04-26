@@ -12,5 +12,6 @@ import { UpdateSecretController } from './update-secret.controller';
   providers: [
     { provide: UPDATE_SECRET_SERVICE, useClass: UpdateSecretService },
   ],
+  exports: [UPDATE_SECRET_SERVICE],
 })
 export class UpdateSecretModule {}

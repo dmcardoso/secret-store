@@ -11,5 +11,6 @@ import { DeleteSecretController } from './delete-secret.controller';
   providers: [
     { provide: DELETE_SECRET_SERVICE, useClass: DeleteSecretService },
   ],
+  exports: [DELETE_SECRET_SERVICE],
 })
 export class DeleteSecretModule {}

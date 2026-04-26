@@ -10,5 +10,6 @@ import { GetSecretController } from './get-secret.controller';
   imports: [MikroOrmModule.forFeature([SecretSchema]), EncryptionModule],
   controllers: [GetSecretController],
   providers: [{ provide: GET_SECRET_SERVICE, useClass: GetSecretService }],
+  exports: [GET_SECRET_SERVICE],
 })
 export class GetSecretModule {}
