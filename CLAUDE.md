@@ -77,6 +77,7 @@ src/
       cli-config.module.ts         # ConfigModule for CLI context
       cli-env.validation.ts        # Joi schema for CLI env vars (ENCRYPTION_KEY optional)
     commands/
+      base.command.ts              # Shared CLI options (extends CommandRunner)
       generate-password/           # Self-contained: command, module, dto, spec
       create-secret/
       get-secret/
@@ -87,6 +88,8 @@ src/
       output.util.ts               # CLI output formatting utilities
   secrets/
     secrets.module.ts              # Imports all sub-modules
+    mappers/
+      secret.mapper.ts             # Entity-to-DTO mapping (DRY)
     entities/
       secret.entity.ts             # Secret entity (defineEntity, uuidv7 PK)
     repositories/
@@ -179,7 +182,7 @@ Each command under `src/cli/commands/` is a self-contained module following the 
 | `update-secret` | Update an existing secret |
 | `delete-secret` | Delete a secret |
 
-Commands use `nest-commander` (`@Command`, `CommandRunner`, `@Option`). CLI commands inject service interfaces from `secrets/domain/` via Symbol tokens.
+Commands use `nest-commander` (`@Command`, `@Option`). All commands except `generate-password` extend `BaseCommand` (which extends `CommandRunner` and provides the shared `--json` option). CLI commands inject service interfaces from `secrets/domain/` via Symbol tokens.
 
 ## Environment Variables
 
@@ -201,17 +204,19 @@ Commands use `nest-commander` (`@Command`, `CommandRunner`, `@Option`). CLI comm
 
 1. Create sub-module under `secrets/<feature>/`: module, controller, service, DTOs, specs.
 2. Define a service interface + Symbol token in `secrets/domain/`.
-3. Register entity via `MikroOrmModule.forFeature([SecretSchema])` in the sub-module.
-4. Bind the interface token to the concrete service in the sub-module's providers.
-5. Import the sub-module in `SecretsModule`.
-6. API prefix is `api/` (set globally in `main.ts`).
+3. If the service returns a `SecretResponseDto`, use `SecretMapper.toResponseDto()` from `secrets/mappers/`.
+4. Register entity via `MikroOrmModule.forFeature([SecretSchema])` in the sub-module.
+5. Bind the interface token to the concrete service in the sub-module's providers.
+6. Import the sub-module in `SecretsModule`.
+7. API prefix is `api/` (set globally in `main.ts`).
 
 ### CLI Command
 
 1. Create sub-module under `src/cli/commands/<command>/`: command, module, dto, spec.
-2. Use `@Command({ name, description })` and extend `CommandRunner`.
+2. Use `@Command({ name, description })` and extend `BaseCommand` (from `src/cli/commands/base.command.ts`).
 3. Inject the service interface from `secrets/domain/` via Symbol token.
 4. Import the command module in `CliModule`.
+5. Ensure the service sub-module exports the Symbol token — CLI command modules import service modules and need the provider visible.
 
 ### Module Registration Pattern
 
@@ -223,6 +228,7 @@ Commands use `nest-commander` (`@Command`, `CommandRunner`, `@Option`). CLI comm
     { provide: GET_SECRET_SERVICE, useClass: GetSecretService },
     GetSecretService,
   ],
+  exports: [GET_SECRET_SERVICE],
 })
 export class GetSecretModule {}
 ```
@@ -250,6 +256,30 @@ export class GetSecretModule {}
 - Swagger UI at `/api/docs`.
 - Use `@ApiTags('name')` to group controllers, `@ApiOperation` for endpoint descriptions.
 - `@nestjs/swagger` plugin auto-generates `@ApiProperty` metadata.
+
+## Code Principles
+
+- **DRY — Extract mappers:** When the same entity-to-DTO mapping appears in more than one service, extract it into a static mapper under `secrets/mappers/`. Services call `Mapper.toDto(entity, ...deps)`.
+- **SOLID — Interface types must be precise:** Domain interfaces in `secrets/domain/` must use concrete return types (e.g., `SecretResponseDto[]`), never `unknown[]` or `any`.
+- **SOLID — Nullish coalescing for optionals:** Use `??` (not `? :`) when falling back on a value for `null`/`undefined` checks — avoids falsy-string bugs.
+- **DRY — Shared CLI options in BaseCommand:** Common CLI options (e.g., `--json`) live in `BaseCommand`. New commands with `--json` extend `BaseCommand`; commands without it extend `CommandRunner` directly.
+- **No dead code:** Delete unused DTOs, interfaces, or imports immediately. If a type exists in two places, keep one canonical definition.
+
+## Gotchas
+
+- **CLI errors are silent.** `pnpm cli:dev` exits with code 1 and no output on NestJS bootstrap failures. To see the actual error, run:
+  ```bash
+  node --trace-uncaught -e "
+    require('ts-node/register');
+    require('tsconfig-paths/register');
+    const { CommandFactory } = require('nest-commander');
+    const { CliModule } = require('./src/cli/cli.module');
+    CommandFactory.run(CliModule, ['<command-name>'])
+      .catch(err => { process.stderr.write(err.stack + '\n'); process.exit(1); });
+  " 2>&1
+  ```
+- **Symbol tokens must be exported.** Service sub-modules that bind a Symbol token via `{ provide: SYMBOL, useClass: Service }` must also include it in `exports: [SYMBOL]`. Without this, importing modules (e.g., CLI command modules) get `Nest can't resolve dependencies` errors.
+- **MikroOrmModule.forRootAsync requires top-level `driver`.** When using `forRootAsync` with `useFactory`, set `driver: PostgreSqlDriver` at the `forRootAsync` level (not only inside `useFactory`) — otherwise NestJS module resolution fails.
 
 ## Code Style
 
