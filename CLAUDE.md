@@ -30,6 +30,10 @@ Secret Store — a NestJS 11 application (TypeScript, pnpm) with MikroORM (Postg
 | Docker up | `docker compose up -d` |
 | Docker down | `docker compose down` |
 | Docker logs | `docker compose logs -f postgres` |
+| Docker full stack up | `ENCRYPTION_KEY="..." docker compose up -d` |
+| Docker full stack down | `docker compose down` |
+| Docker rebuild | `docker compose build --no-cache secret-store` |
+| Docker CLI exec | `docker compose exec secret-store node dist/cli/main.js <command>` |
 
 ## Project Conventions
 

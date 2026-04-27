@@ -25,22 +25,22 @@ O proposito deste projeto e demonstrar, na pratica, como ferramentas de IA gener
 
 ## Stack Tecnologica
 
-| Tecnologia | Versao | Uso |
-|---|---|---|
-| **Node.js** | ^22 | Runtime |
-| **TypeScript** | ^5.7.3 | Linguagem |
-| **NestJS** | ^11.0.1 | Framework |
-| **MikroORM** | ^7.0.11 | ORM |
-| **PostgreSQL** | 18 | Banco de dados |
-| **Swagger/OpenAPI** | ^11.3.2 | Documentacao da API |
-| **nest-commander** | ^3.20.1 | Interface CLI |
+| Tecnologia | Versao   | Uso |
+|---|----------|---|
+| **Node.js** | ^24      | Runtime |
+| **TypeScript** | ^5.7.3   | Linguagem |
+| **NestJS** | ^11.0.1  | Framework |
+| **MikroORM** | ^7.0.11  | ORM |
+| **PostgreSQL** | 18       | Banco de dados |
+| **Swagger/OpenAPI** | ^11.3.2  | Documentacao da API |
+| **nest-commander** | ^3.20.1  | Interface CLI |
 | **SWC** | ^1.15.30 | Compilador (transpilacao Rust) |
-| **class-validator** | ^0.15.1 | Validacao de DTOs |
-| **class-transformer** | ^0.5.1 | Transformacao de DTOs |
-| **Jest** | ^30.0.0 | Testes |
-| **ESLint** | ^9.18.0 | Linting |
-| **Prettier** | ^3.4.2 | Formatacao |
-| **pnpm** | - | Gerenciador de pacotes |
+| **class-validator** | ^0.15.1  | Validacao de DTOs |
+| **class-transformer** | ^0.5.1   | Transformacao de DTOs |
+| **Jest** | ^30.0.0  | Testes |
+| **ESLint** | ^9.18.0  | Linting |
+| **Prettier** | ^3.4.2   | Formatacao |
+| **pnpm** | -        | Gerenciador de pacotes |
 
 ---
 
@@ -122,9 +122,10 @@ secret-store/
     app.e2e-spec.ts                  # Testes end-to-end
     secrets.e2e-spec.ts              # Testes e2e da feature de secrets
     jest-e2e.json                    # Configuracao Jest para e2e
+  Dockerfile                         # Multi-stage build otimizado (Node 24, non-root user)
+  docker-compose.yaml                # PostgreSQL 18 + Secret Store
   docs/
     http/                            # Requisicoes HTTP para IntelliJ HTTP Client / VS Code REST Client
-  docker-compose.yaml                # PostgreSQL 18
 ```
 
 ### Arquitetura Dual (HTTP API + CLI)
@@ -382,7 +383,7 @@ A aplicacao tambem possui uma interface CLI independente, construida com `nest-c
 
 ### Pre-requisitos
 
-- **Node.js** >= 22
+- **Node.js** >= 24
 - **pnpm** (instalar com `npm install -g pnpm`)
 - **Docker** e **Docker Compose** (para o banco de dados)
 
@@ -421,11 +422,11 @@ Variaveis disponiveis:
 | `ENCRYPTION_KEY` | **Sim** | - | Chave de criptografia (exatamente 32 caracteres) |
 | `SWAGGER_ENABLED` | Nao | `true` | Habilita Swagger UI (`true` / `false`) |
 
-### 4. Subir o banco de dados
+### 4. Subir o banco de dados (desenvolvimento local)
 
 ```bash
 # Iniciar PostgreSQL
-docker compose up -d
+docker compose up -d postgres
 
 # Verificar se esta rodando
 docker compose logs -f postgres
@@ -434,7 +435,7 @@ docker compose logs -f postgres
 docker compose down
 ```
 
-### 5. Criar o schema do banco
+### 5. Criar o schema do banco (desenvolvimento local)
 
 ```bash
 # Criar schema pela primeira vez
@@ -447,7 +448,7 @@ pnpm run schema:update
 pnpm run schema:fresh
 ```
 
-### 6. Executar a aplicacao
+### 6. Executar a aplicacao (desenvolvimento local)
 
 ```bash
 # Desenvolvimento (hot-reload)
@@ -461,7 +462,7 @@ pnpm run build
 pnpm run start:prod
 ```
 
-### 7. Executar o CLI
+### 7. Executar o CLI (desenvolvimento local)
 
 ```bash
 # Desenvolvimento
@@ -473,6 +474,63 @@ pnpm run cli:dev -- create-secret
 pnpm run cli -- --help
 pnpm run cli -- generate-password --length 32
 pnpm run cli -- create-secret
+```
+
+---
+
+## Docker (Producao)
+
+A aplicacao pode ser executada inteiramente via Docker Compose. O container inclui a API HTTP e o CLI, e executa automaticamente a migracao do schema do banco ao iniciar.
+
+### Variaveis de ambiente
+
+A unica variavel obrigatoria e `ENCRYPTION_KEY` (exatamente 32 caracteres). Todas as demais possuem valores padrao.
+
+| Variavel | Obrigatoria | Padrao | Descricao |
+|---|---|---|---|
+| `ENCRYPTION_KEY` | **Sim** | - | Chave de criptografia (exatamente 32 caracteres) |
+| `NODE_ENV` | Nao | `production` | Ambiente |
+| `PORT` | Nao | `3000` | Porta do servidor HTTP (host) |
+| `DB_USER` | Nao | `secret_store_user` | Usuario do banco |
+| `DB_PASSWORD` | Nao | `secret_store_password` | Senha do banco |
+| `DB_NAME` | Nao | `secret_store` | Nome do banco |
+| `SWAGGER_ENABLED` | Nao | `true` | Habilita Swagger UI |
+
+### Subir a aplicacao
+
+```bash
+# Iniciar todos os servicos (PostgreSQL + API)
+ENCRYPTION_KEY="your-32-character-key-here!!!!!!!!!!" docker compose up -d
+
+# Ver logs
+docker compose logs -f secret-store
+
+# Parar tudo
+docker compose down
+```
+
+A API estara disponivel em `http://localhost:3000/api` e o Swagger em `http://localhost:3000/api/docs`.
+
+### Executar comandos CLI no container
+
+```bash
+# Gerar uma senha
+docker compose exec secret-store node dist/cli/main.js generate-password --length 32
+
+# Criar um segredo
+docker compose exec secret-store node dist/cli/main.js create-secret
+
+# Listar segredos
+docker compose exec secret-store node dist/cli/main.js list-secrets
+
+# Ver ajuda
+docker compose exec secret-store node dist/cli/main.js --help
+```
+
+### Reconstruir a imagem
+
+```bash
+docker compose build --no-cache secret-store
 ```
 
 ---

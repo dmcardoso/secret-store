@@ -15,6 +15,28 @@ services:
     networks:
       - secret-store-network
 
+  secret-store:
+    build: .
+    ports:
+      - '${PORT:-3000}:3000'
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-secret_store}
+      DB_USER: ${DB_USER:-secret_store_user}
+      DB_PASSWORD: ${DB_PASSWORD:-secret_store_password}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?ENCRYPTION_KEY is required}
+      SWAGGER_ENABLED: ${SWAGGER_ENABLED:-true}
+      MIKRO_ORM_CLI_PREFER_TS: 'false'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: sh -c "node node_modules/@mikro-orm/cli/cli.js schema:update --run && node dist/main.js"
+    networks:
+      - secret-store-network
+
 networks:
   secret-store-network:
     driver: bridge

@@ -7,8 +7,8 @@ export default defineConfig({
   dbName: process.env.DB_NAME ?? 'secret_store',
   user: process.env.DB_USER ?? 'secret_store_user',
   password: process.env.DB_PASSWORD ?? 'secret_store_password',
-  entities: ['dist/**/*.entity.js'],
-  entitiesTs: ['src/**/*.entity.ts'],
+  entities: ['**/*.entity.js'],
+  entitiesTs: ['**/*.entity.ts'],
   extensions: [Migrator],
   migrations: {
     path: 'dist/migrations',

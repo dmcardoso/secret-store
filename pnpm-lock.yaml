@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@mikro-orm/cli':
+        specifier: ^7.0.11
+        version: 7.0.11
       '@mikro-orm/core':
         specifier: ^7.0.11
         version: 7.0.11
@@ -66,9 +69,6 @@ importers:
       '@eslint/js':
         specifier: ^9.18.0
         version: 9.39.4
-      '@mikro-orm/cli':
-        specifier: ^7.0.11
-        version: 7.0.11
       '@nestjs/cli':
         specifier: ^11.0.0
         version: 11.0.21(@swc/cli@0.8.1(@swc/core@1.15.30)(chokidar@4.0.3))(@swc/core@1.15.30)(@types/node@24.12.2)(prettier@3.8.3)
