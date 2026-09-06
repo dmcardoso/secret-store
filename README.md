@@ -21,6 +21,88 @@ O proposito deste projeto e demonstrar, na pratica, como ferramentas de IA gener
 - Configurou MikroORM, Swagger, validacao de environment variables
 - Refatorou o codigo multiplas vezes para seguir a convencao de um-metodo-por-classe
 
+## Visão arquitetural documentada com GenAI
+
+### Escopo e nível da visão
+
+O Secret Store é um serviço de gerenciamento de credenciais que expõe uma API REST e uma CLI independente. Esta documentação usa duas visões complementares: uma visão de containers em nível de sistema/runtime, para mostrar os pontos de entrada, o núcleo de casos de uso, a proteção criptográfica e o PostgreSQL; e uma visão comportamental da jornada `POST /api/secrets`, para mostrar a ordem das chamadas.
+
+O sistema suporta criar, listar, consultar, atualizar e remover segredos, além de gerar senhas. O mesmo núcleo de serviços é reutilizado pela API e pelos comandos CLI por meio de tokens de interfaces. As respostas HTTP são validadas, envelopadas pelo `TransformInterceptor` e tratadas pelo `HttpExceptionFilter` em caso de erro.
+
+### Limites e responsabilidades
+
+- **Entradas:** `src/main.ts` inicializa a API HTTP; `src/cli/main.ts` inicializa a CLI com `nest-commander`.
+- **Aplicação:** controllers HTTP e commands CLI adaptam entradas; os services em `src/secrets/` executam os casos de uso.
+- **Proteção:** `EncryptionService` cifra e decifra senhas com AES-256-CBC e IV aleatório. A chave é fornecida por `ENCRYPTION_KEY` e precisa ter exatamente 32 caracteres.
+- **Persistência:** MikroORM e `SecretRepository` persistem a entidade `Secret` no PostgreSQL. O valor armazenado é `iv:ciphertext`; a senha em texto plano não é persistida.
+- **Operação local:** `docker-compose.yaml` sobe PostgreSQL 18 e o serviço, conectados pela rede `secret-store-network`; o container executa `schema:update` antes da API.
+
+### Integrações, restrições e lacunas
+
+As integrações observadas no código são PostgreSQL via MikroORM, Docker Compose para execução local/contêiner, Swagger opcional em `/api/docs` e o terminal para a CLI. Não foram identificados provedor de identidade, filas, serviços externos ou armazenamento de objetos.
+
+As principais restrições são a dependência de `ENCRYPTION_KEY`, a disponibilidade do PostgreSQL e o uso de AES-256-CBC sem mecanismo de autenticação de ciphertext visível no código. Também não há, nesta implementação, autenticação/autorização HTTP, rotação de chaves, auditoria de acesso, política de backup/restore, rate limiting ou mascaramento explícito da senha retornada. Esses pontos são lacunas de segurança/operabilidade a tratar antes de uma exposição pública.
+
+### Diagrama estrutural — containers/runtime
+
+![Visão de containers do Secret Store](docs/diagrams/secret-store.architecture.visual-check.1440x900.light.png)
+
+[Abrir o diagrama estrutural interativo](docs/diagrams/secret-store.architecture.html) · [Especificação Archify](docs/diagrams/secret-store.architecture.json)
+
+```mermaid
+flowchart LR
+    HTTP[Cliente HTTP] -->|HTTP /api| API[API NestJS]
+    CLI[Operador CLI] -->|comandos + opções| RUN[CLI NestJS]
+    API -->|controllers / tokens| CORE[SecretsModule<br/>casos de uso]
+    RUN -->|serviços compartilhados| CORE
+    CORE -->|encrypt / decrypt| ENC[EncryptionService<br/>AES-256-CBC + IV]
+    CORE -->|MikroORM / SQL| DB[(PostgreSQL<br/>Secret)]
+```
+
+### Diagrama comportamental — criar segredo
+
+![Sequência de criação de segredo](docs/diagrams/create-secret.sequence.visual-check.1440x900.light.png)
+
+[Abrir o diagrama de sequência interativo](docs/diagrams/create-secret.sequence.html) · [Especificação Archify](docs/diagrams/create-secret.sequence.json)
+
+```mermaid
+sequenceDiagram
+    participant C as Cliente
+    participant V as ValidationPipe
+    participant Ctrl as CreateSecretController
+    participant Svc as CreateSecretService
+    participant Enc as EncryptionService
+    participant Repo as EntityRepository
+    participant DB as PostgreSQL
+
+    C->>V: POST /api/secrets + payload
+    V->>Ctrl: CreateSecretDto validado
+    Ctrl->>Svc: execute(dto)
+    Svc->>Enc: encrypt(password)
+    Enc-->>Svc: iv:ciphertext
+    Svc->>Repo: create + persist + flush
+    Repo->>DB: INSERT Secret
+    DB-->>Repo: entidade persistida
+    Repo-->>Svc: segredo criado
+    Svc->>Enc: decrypt(encryptedPassword)
+    Enc-->>Svc: senha em texto plano
+    Svc-->>Ctrl: SecretResponseDto
+    Ctrl-->>C: 201 { data, timestamp }
+```
+
+### Decisões e ajustes sobre a geração
+
+Os diagramas foram gerados a partir da leitura do código e das descrições existentes neste README, usando Mermaid como representação semântica e Archify para produzir os artefatos renderizados. As decisões principais foram:
+
+1. Mostrar API e CLI como entradas separadas, porque possuem bootstraps (`NestFactory` e `CommandFactory`) distintos, mas compartilham `SecretsModule`, `SharedModule` e os tokens de serviço.
+2. Escolher `POST /api/secrets` como jornada crítica, pois ela evidencia validação, injeção por interface, cifragem, persistência e montagem da resposta.
+3. Omitir dependências não comprovadas no repositório, como autenticação, fila ou serviços cloud.
+4. Remover `sources` dos JSON do Archify porque o projeto local não possui URL/revisão Git pública compatível com o contrato do renderer; as evidências permanecem registradas pelos caminhos de código nesta seção.
+5. Encurtar alguns rótulos visuais do sequence diagram (`Create Ctrl`, `Encrypt`, `Repository`) para respeitar a largura mínima legível; os identificadores completos continuam no Mermaid e no texto descritivo.
+6. Compactar o eixo temporal e remover cards redundantes do artefato comportamental para manter o diagrama inteiro contido em telas desktop, sem retirar mensagens da jornada.
+
+Os receipts automatizados ficam em [`docs/diagrams/secret-store.architecture.visual-check.json`](docs/diagrams/secret-store.architecture.visual-check.json) e [`docs/diagrams/create-secret.sequence.visual-check.json`](docs/diagrams/create-secret.sequence.visual-check.json). A revisão perceptual final ainda depende de um leitor humano; os checks de navegador confirmam containment, legibilidade mínima, chrome do viewer e ausência de overflow nos tamanhos testados.
+
 ---
 
 ## Stack Tecnologica
