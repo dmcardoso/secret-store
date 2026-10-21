@@ -117,6 +117,14 @@ Para o relatório completo com os prompts comparados (V1 vs V2), análise de div
 
 ---
 
+## Ética e Governança no Uso de GenAI em Testes (Unidade IV)
+
+Como parte das discussões da **Unidade IV da Especialização em IA (UFG)**, foi desenvolvido um ensaio prático e reflexivo abordando os riscos éticos e legais do uso de GenAI em testes de software aplicados a serviços de gerenciamento de credenciais e segurança (incluindo mitigação de vazamento de dados pessoais sob a LGPD, proteção de segredo de negócio, testes tautológicos/placebos e mecanismos de governança corporativa):
+
+👉 **[`docs/forum-unidade-4-etica-governanca-genai.md`](docs/forum-unidade-4-etica-governanca-genai.md)**.
+
+---
+
 ## Stack Tecnologica
 
 | Tecnologia | Versao   | Uso |
