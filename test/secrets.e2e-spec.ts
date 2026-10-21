@@ -4,6 +4,8 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 import { LoggerService } from './../src/shared/logger/logger.service';
+import { HttpExceptionFilter } from './../src/shared/filters/http-exception.filter';
+import { TransformInterceptor } from './../src/shared/interceptors/transform.interceptor';
 
 interface SecretResponse {
   id: string;
@@ -36,7 +38,12 @@ describe('Secrets (e2e)', () => {
       imports: [AppModule],
     })
       .overrideProvider(LoggerService)
-      .useValue({ log: jest.fn(), error: jest.fn(), warn: jest.fn() })
+      .useValue({
+        log: jest.fn(),
+        error: jest.fn(),
+        warn: jest.fn(),
+        setContext: jest.fn(),
+      })
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -48,6 +55,8 @@ describe('Secrets (e2e)', () => {
         transform: true,
       }),
     );
+    app.useGlobalFilters(new HttpExceptionFilter());
+    app.useGlobalInterceptors(new TransformInterceptor());
     await app.init();
   });
 

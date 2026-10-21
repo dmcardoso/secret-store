@@ -4,7 +4,14 @@
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "transform": {
-    "^.+\\.(t|j)s$": "ts-jest"
+    "^.+\\.(t|j)s$": [
+      "@swc/jest",
+      {
+        "module": {
+          "type": "commonjs"
+        }
+      }
+    ]
   },
-  "transformIgnorePatterns": ["node_modules/(?!(@mikro-orm)/)"]
+  "transformIgnorePatterns": ["node_modules/(?!(\\.pnpm|@mikro-orm))"]
 }

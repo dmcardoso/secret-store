@@ -105,6 +105,18 @@ Os receipts automatizados ficam em [`docs/diagrams/secret-store.architecture.vis
 
 ---
 
+## Testes de Integração com GenAI (Unidade III)
+
+Como parte das atividades da **Unidade III da Especialização em IA (UFG)**, foram exploradas e avaliadas duas estratégias de prompt engineering para geração de testes de integração automatizados na API REST do Secret Store:
+
+1. **Prompt Tipo 1 — Contrato e Casos Negativos de Fronteira:** Focado na camada HTTP e validação estrita dos DTOs (`ValidationPipe` com `forbidNonWhitelisted`, rejeição de tipos inválidos, payload injection e padronização de respostas de erro via `HttpExceptionFilter`). Suíte implementada em [`test/secrets-contract-integration.e2e-spec.ts`](test/secrets-contract-integration.e2e-spec.ts).
+2. **Prompt Tipo 2 — Fluxo Transversal e Invariantes de Estado:** Focado na jornada integrada ponta a ponta (HTTP -> Controllers -> Domain Services -> EncryptionService -> MikroORM -> PostgreSQL), validando invariantes criptográficos diretamente no banco de dados (garantia de que senhas nunca são persistidas em texto plano no PostgreSQL) e resiliência a dados corrompidos. Suíte implementada em [`test/secrets-lifecycle-integration.e2e-spec.ts`](test/secrets-lifecycle-integration.e2e-spec.ts).
+
+Para o relatório completo com os prompts comparados (V1 vs V2), análise de diversidade, lições de prompt engineering e evidências de execução, consulte o documento:
+👉 **[`docs/forum-unidade-3-testes-integracao.md`](docs/forum-unidade-3-testes-integracao.md)**.
+
+---
+
 ## Stack Tecnologica
 
 | Tecnologia | Versao   | Uso |
@@ -201,9 +213,11 @@ secret-store/
       list-secrets/
       update-secret/
   test/
-    app.e2e-spec.ts                  # Testes end-to-end
-    secrets.e2e-spec.ts              # Testes e2e da feature de secrets
-    jest-e2e.json                    # Configuracao Jest para e2e
+    app.e2e-spec.ts                            # Testes end-to-end (Health)
+    secrets.e2e-spec.ts                        # Testes e2e da feature de secrets
+    secrets-contract-integration.e2e-spec.ts   # Testes de integração de contrato e casos negativos (Prompt Tipo 1)
+    secrets-lifecycle-integration.e2e-spec.ts  # Testes de integração de ciclo de vida e invariantes de banco (Prompt Tipo 2)
+    jest-e2e.json                              # Configuracao Jest para e2e
   Dockerfile                         # Multi-stage build otimizado (Node 24, non-root user)
   docker-compose.yaml                # PostgreSQL 18 + Secret Store
   docs/

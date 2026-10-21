@@ -13,10 +13,16 @@ describe('AppController (e2e)', () => {
       imports: [AppModule],
     })
       .overrideProvider(LoggerService)
-      .useValue({ log: jest.fn(), error: jest.fn(), warn: jest.fn() })
+      .useValue({
+        log: jest.fn(),
+        error: jest.fn(),
+        warn: jest.fn(),
+        setContext: jest.fn(),
+      })
       .compile();
 
     app = moduleFixture.createNestApplication();
+    app.setGlobalPrefix('api');
     await app.init();
   });
 

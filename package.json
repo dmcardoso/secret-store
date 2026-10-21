@@ -93,7 +93,7 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
     "transformIgnorePatterns": [
-      "node_modules/(?!(@mikro-orm)/)"
+      "node_modules/(?!(\\.pnpm|@mikro-orm))"
     ]
   }
 }
